@@ -39,9 +39,16 @@ def main():
             guardar_ejecucion(session, valores)
         elif opcion == '3':
             id_ejecucion = Menu.pedir_id_ejecucion()
+            if not id_ejecucion.isdigit() or int(id_ejecucion) <= 0:
+                Menu.mostrar_mensaje("El ID debe ser un número entero positivo.")
+                continue
             ejecucion = session.query(Ejecucion).filter_by(id=int(id_ejecucion)).first()
             if ejecucion:
-                valores = [float(x) for x in ejecucion.data_set.split(',')]
+                try:
+                    valores = [float(x) for x in ejecucion.data_set.split(',') if x.strip() != '']
+                except ValueError:
+                    Menu.mostrar_mensaje("El data set guardado contiene valores no numéricos.")
+                    continue
                 graficar_dataset(valores)
             else:
                 Menu.mostrar_mensaje("No se encontró la ejecución con ese ID.")
