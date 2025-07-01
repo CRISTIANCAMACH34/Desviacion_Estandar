@@ -45,48 +45,29 @@ def main():
             # Visualizar resultados con Matplotlib
             graficar_dataset(valores)
         elif opcion == '3':
-            # Obtener todos los datasets ordenados por ID
+            # Mostrar historial de datos en formato tabla
             ejecuciones = session.query(Ejecucion).order_by(Ejecucion.id).all()
-            
             if not ejecuciones:
                 Menu.mostrar_mensaje("No hay datasets guardados.")
                 continue
-            
-            indice_actual = 0
-            total_ejecuciones = len(ejecuciones)
-            
-            while True:
-                ejecucion_actual = ejecuciones[indice_actual]
-                Menu.mostrar_dataset_info(ejecucion_actual, total_ejecuciones)
-                Menu.mostrar_opciones_navegacion()
-                
-                comando = Menu.pedir_comando_navegacion()
-                
-                if comando == 's':  # Siguiente
-                    if indice_actual < total_ejecuciones - 1:
-                        indice_actual += 1
-                    else:
-                        Menu.mostrar_mensaje_navegacion("Ya estás en el último dataset.")
-                
-                elif comando == 'a':  # Anterior
-                    if indice_actual > 0:
-                        indice_actual -= 1
-                    else:
-                        Menu.mostrar_mensaje_navegacion("Ya estás en el primer dataset.")
-                
-                elif comando == 'g':  # Graficar
-                    try:
-                        valores = [float(x) for x in ejecucion_actual.data_set.split(',') if x.strip() != '']
-                        graficar_dataset(valores)
-                    except ValueError:
-                        Menu.mostrar_mensaje("El data set guardado contiene valores no numéricos.")
-                
-                elif comando == 'v':  # Volver
-                    break
-                
-                else:
-                    Menu.mostrar_mensaje_navegacion("Comando no válido. Use 's', 'a', 'g' o 'v'.")
+            Menu.mostrar_tabla_historial(ejecuciones)
+            # Mantener la navegación interactiva si lo deseas, o solo mostrar la tabla
         elif opcion == '4':
+            # Ver último análisis realizado en formato tabla
+            ejecucion = session.query(Ejecucion).order_by(Ejecucion.id.desc()).first()
+            if ejecucion:
+                Menu.mostrar_tabla_ultimo(ejecucion)
+            else:
+                Menu.mostrar_mensaje("No hay análisis realizados.")
+        elif opcion == '5':
+            # Reiniciar (eliminar) todos los datos
+            if Menu.mostrar_confirmacion_reinicio():
+                session.query(Ejecucion).delete()
+                session.commit()
+                Menu.mostrar_mensaje("Todos los datos han sido eliminados.")
+            else:
+                Menu.mostrar_mensaje("Operación cancelada.")
+        elif opcion == '6':
             Menu.mostrar_mensaje("¡Hasta luego!")
             break
         else:
