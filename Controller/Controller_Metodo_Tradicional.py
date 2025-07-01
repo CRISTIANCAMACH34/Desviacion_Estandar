@@ -61,12 +61,43 @@ def graficar_dataset(valores):
         print("No hay datos numéricos válidos para graficar.")
         return
     try:
-        plt.figure(figsize=(8, 4))
-        plt.plot(valores, marker='o', linestyle='-', color='b')
-        plt.title('Gráfica del Data Set')
-        plt.xlabel('Índice')
-        plt.ylabel('Valor')
-        plt.grid(True)
+        # Calcular estadísticas para mostrar en el gráfico
+        import numpy as np
+        media = np.mean(valores)
+        desv_std = np.std(valores)
+        
+        plt.figure(figsize=(10, 6))
+        
+        # Gráfico principal de los valores
+        plt.subplot(2, 1, 1)
+        plt.plot(valores, marker='o', linestyle='-', color='blue', linewidth=2, markersize=8)
+        plt.axhline(y=media, color='red', linestyle='--', label=f'Media: {media:.2f}')
+        plt.title('Análisis de Desviación Estándar', fontsize=14, fontweight='bold')
+        plt.xlabel('Índice de los datos')
+        plt.ylabel('Valores')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        
+        # Gráfico de barras mostrando la desviación
+        plt.subplot(2, 1, 2)
+        indices = range(len(valores))
+        plt.bar(indices, valores, color='skyblue', alpha=0.7)
+        plt.axhline(y=media, color='red', linestyle='--', label=f'Media: {media:.2f}')
+        plt.title(f'Distribución de Datos - Desviación Estándar: {desv_std:.4f}')
+        plt.xlabel('Índice de los datos')
+        plt.ylabel('Valores')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
         plt.show()
+        
+        # Mostrar resumen de estadísticas
+        print(f"\n--- Resumen Estadístico ---")
+        print(f"Valores: {valores}")
+        print(f"Media: {media:.4f}")
+        print(f"Desviación Estándar: {desv_std:.4f}")
+        print(f"Número de datos: {len(valores)}")
+        
     except Exception as e:
         print(f"No se pudo mostrar la gráfica: {e}")

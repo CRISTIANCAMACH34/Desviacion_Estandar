@@ -28,30 +28,64 @@ def main():
         Menu.mostrar_menu()
         opcion = Menu.pedir_opcion()
         if opcion == '1':
+            # Opción 1: Introducir números manualmente
             valores = leer_valores_desde_consola()
-            resultado = desviacion_estandar_tradicional(valores)
-            Menu.mostrar_resultado(resultado)
-            guardar_ejecucion(session, valores)
+            if valores:
+                resultado = desviacion_estandar_numpy(valores)
+                Menu.mostrar_resultado(resultado)
+                guardar_ejecucion(session, valores)
+                # Visualizar resultados con Matplotlib
+                graficar_dataset(valores)
         elif opcion == '2':
-            valores = leer_valores_desde_consola()
+            # Opción 2: Utilizar datos de velocidad predefinidos
+            valores = Menu.mostrar_datos_predefinidos()
             resultado = desviacion_estandar_numpy(valores)
             Menu.mostrar_resultado(resultado)
             guardar_ejecucion(session, valores)
+            # Visualizar resultados con Matplotlib
+            graficar_dataset(valores)
         elif opcion == '3':
-            id_ejecucion = Menu.pedir_id_ejecucion()
-            if not id_ejecucion.isdigit() or int(id_ejecucion) <= 0:
-                Menu.mostrar_mensaje("El ID debe ser un número entero positivo.")
+            # Obtener todos los datasets ordenados por ID
+            ejecuciones = session.query(Ejecucion).order_by(Ejecucion.id).all()
+            
+            if not ejecuciones:
+                Menu.mostrar_mensaje("No hay datasets guardados.")
                 continue
-            ejecucion = session.query(Ejecucion).filter_by(id=int(id_ejecucion)).first()
-            if ejecucion:
-                try:
-                    valores = [float(x) for x in ejecucion.data_set.split(',') if x.strip() != '']
-                except ValueError:
-                    Menu.mostrar_mensaje("El data set guardado contiene valores no numéricos.")
-                    continue
-                graficar_dataset(valores)
-            else:
-                Menu.mostrar_mensaje("No se encontró la ejecución con ese ID.")
+            
+            indice_actual = 0
+            total_ejecuciones = len(ejecuciones)
+            
+            while True:
+                ejecucion_actual = ejecuciones[indice_actual]
+                Menu.mostrar_dataset_info(ejecucion_actual, total_ejecuciones)
+                Menu.mostrar_opciones_navegacion()
+                
+                comando = Menu.pedir_comando_navegacion()
+                
+                if comando == 's':  # Siguiente
+                    if indice_actual < total_ejecuciones - 1:
+                        indice_actual += 1
+                    else:
+                        Menu.mostrar_mensaje_navegacion("Ya estás en el último dataset.")
+                
+                elif comando == 'a':  # Anterior
+                    if indice_actual > 0:
+                        indice_actual -= 1
+                    else:
+                        Menu.mostrar_mensaje_navegacion("Ya estás en el primer dataset.")
+                
+                elif comando == 'g':  # Graficar
+                    try:
+                        valores = [float(x) for x in ejecucion_actual.data_set.split(',') if x.strip() != '']
+                        graficar_dataset(valores)
+                    except ValueError:
+                        Menu.mostrar_mensaje("El data set guardado contiene valores no numéricos.")
+                
+                elif comando == 'v':  # Volver
+                    break
+                
+                else:
+                    Menu.mostrar_mensaje_navegacion("Comando no válido. Use 's', 'a', 'g' o 'v'.")
         elif opcion == '4':
             Menu.mostrar_mensaje("¡Hasta luego!")
             break
